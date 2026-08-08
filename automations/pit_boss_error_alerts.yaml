@@ -1,0 +1,46 @@
+id: pit_boss_error_alerts
+alias: Pit Boss - Error Alerts
+triggers:
+  - trigger: state
+    entity_id:
+      - binary_sensor.pit_boss_mpc_error
+      - binary_sensor.pit_boss_p2_error
+      - binary_sensor.pit_boss_p3_error
+      - binary_sensor.pit_boss_startup_error
+      - binary_sensor.pit_boss_high_temperature_error
+      - binary_sensor.pit_boss_fan_error
+      - binary_sensor.pit_boss_igniter_error
+      - binary_sensor.pit_boss_auger_error
+      - binary_sensor.pit_boss_no_pellets
+    to: "on"
+    id: error
+  - trigger: state
+    entity_id: binary_sensor.pit_boss_connectivity
+    to: "off"
+    for: "00:02:00"
+    id: disconnected
+conditions: []
+actions:
+  - variables:
+      message: >
+        {% if trigger.id == 'disconnected' %}The Pit Boss smoker has lost its connection to Home Assistant.
+        {% elif trigger.entity_id == 'binary_sensor.pit_boss_no_pellets' %}The Pit Boss smoker is out of pellets.
+        {% elif trigger.entity_id == 'binary_sensor.pit_boss_fan_error' %}The Pit Boss smoker is reporting a fan error.
+        {% elif trigger.entity_id == 'binary_sensor.pit_boss_igniter_error' %}The Pit Boss smoker is reporting an igniter error.
+        {% elif trigger.entity_id == 'binary_sensor.pit_boss_auger_error' %}The Pit Boss smoker is reporting an auger error.
+        {% elif trigger.entity_id == 'binary_sensor.pit_boss_high_temperature_error' %}Warning. The Pit Boss smoker is reporting a high temperature error.
+        {% elif trigger.entity_id == 'binary_sensor.pit_boss_startup_error' %}The Pit Boss smoker is reporting a startup error.
+        {% elif trigger.entity_id == 'binary_sensor.pit_boss_mpc_error' %}The Pit Boss smoker is reporting an error with meat probe one.
+        {% elif trigger.entity_id == 'binary_sensor.pit_boss_p2_error' %}The Pit Boss smoker is reporting an error with meat probe two.
+        {% elif trigger.entity_id == 'binary_sensor.pit_boss_p3_error' %}The Pit Boss smoker is reporting an error with meat probe three.
+        {% else %}The Pit Boss smoker is reporting an error.{% endif %}
+  - action: script.stop_all_homepods
+    data: {}
+  - delay: "00:00:01"
+  - action: tts.google_translate_say
+    data:
+      cache: false
+      entity_id: media_player.all_homepods
+      message: "{{ message }}"
+mode: queued
+max: 10

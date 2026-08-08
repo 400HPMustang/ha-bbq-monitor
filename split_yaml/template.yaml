@@ -1,0 +1,63 @@
+- sensor:
+    - name: IBBQ Probe 1
+      unique_id: ibbq_probe_1
+      device_class: temperature
+      state_class: measurement
+      unit_of_measurement: "°F"
+      state: >
+        {% set raw = states('sensor.ibbq_raw_probe_data') | base64_decode(none) | unpack('h', 0) %}
+        {% if raw / 100.0 != -0.1 %}{{ raw / 100.0 }}{% else %}{{ none }}{% endif %}
+    - name: IBBQ Probe 2
+      unique_id: ibbq_probe_2
+      device_class: temperature
+      state_class: measurement
+      unit_of_measurement: "°F"
+      state: >
+        {% set raw = states('sensor.ibbq_raw_probe_data') | base64_decode(none) | unpack('h', 4) %}
+        {% if raw / 100.0 != -0.1 %}{{ raw / 100.0 }}{% else %}{{ none }}{% endif %}
+    - name: IBBQ Probe 3
+      unique_id: ibbq_probe_3
+      device_class: temperature
+      state_class: measurement
+      unit_of_measurement: "°F"
+      state: >
+        {% set raw = states('sensor.ibbq_raw_probe_data') | base64_decode(none) | unpack('h', 8) %}
+        {% if raw / 100.0 != -0.1 %}{{ raw / 100.0 }}{% else %}{{ none }}{% endif %}
+    - name: IBBQ Probe 4
+      unique_id: ibbq_probe_4
+      device_class: temperature
+      state_class: measurement
+      unit_of_measurement: "°F"
+      state: >
+        {% set raw = states('sensor.ibbq_raw_probe_data') | base64_decode(none) | unpack('h', 12) %}
+        {% if raw / 100.0 != -0.1 %}{{ raw / 100.0 }}{% else %}{{ none }}{% endif %}
+
+- binary_sensor:
+    - name: IBBQ Probe 1 Connected
+      unique_id: ibbq_probe_1_connected
+      device_class: connectivity
+      availability: >
+        {{ states('sensor.ibbq_probe_status_raw') not in ['unknown', 'unavailable', 'none'] }}
+      state: >
+        {% set value = states('sensor.ibbq_probe_status_raw') | int %}{{ value % 2 == 0 }}
+    - name: IBBQ Probe 2 Connected
+      unique_id: ibbq_probe_2_connected
+      device_class: connectivity
+      availability: >
+        {{ states('sensor.ibbq_probe_status_raw') not in ['unknown', 'unavailable', 'none'] }}
+      state: >
+        {% set value = states('sensor.ibbq_probe_status_raw') | int %}{{ (value // 2) % 2 == 0 }}
+    - name: IBBQ Probe 3 Connected
+      unique_id: ibbq_probe_3_connected
+      device_class: connectivity
+      availability: >
+        {{ states('sensor.ibbq_probe_status_raw') not in ['unknown', 'unavailable', 'none'] }}
+      state: >
+        {% set value = states('sensor.ibbq_probe_status_raw') | int %}{{ (value // 4) % 2 == 0 }}
+    - name: IBBQ Probe 4 Connected
+      unique_id: ibbq_probe_4_connected
+      device_class: connectivity
+      availability: >
+        {{ states('sensor.ibbq_probe_status_raw') not in ['unknown', 'unavailable', 'none'] }}
+      state: >
+        {% set value = states('sensor.ibbq_probe_status_raw') | int %}{{ (value // 8) % 2 == 0 }}

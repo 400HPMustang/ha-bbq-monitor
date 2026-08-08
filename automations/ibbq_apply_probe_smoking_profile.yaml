@@ -1,0 +1,35 @@
+id: ibbq_apply_probe_smoking_profile
+alias: IBBQ - Apply Probe Smoking Profile
+triggers:
+  - trigger: state
+    entity_id: input_select.ibbq_probe_1_profile
+    id: probe_1
+  - trigger: state
+    entity_id: input_select.ibbq_probe_2_profile
+    id: probe_2
+  - trigger: state
+    entity_id: input_select.ibbq_probe_3_profile
+    id: probe_3
+  - trigger: state
+    entity_id: input_select.ibbq_probe_4_profile
+    id: probe_4
+conditions:
+  - condition: template
+    value_template: "{{ trigger.to_state.state != 'Manual' }}"
+actions:
+  - variables:
+      target_entity: >
+        {{ {'probe_1':'input_number.ibbq_target_probe_1','probe_2':'input_number.ibbq_target_probe_2','probe_3':'input_number.ibbq_target_probe_3','probe_4':'input_number.ibbq_target_probe_4'}[trigger.id] }}
+      target_temp: >
+        {% set p = trigger.to_state.state %}
+        {% set t = {'Brisket':203,'Pork Shoulder / Butt':203,'Beef Chuck Roast':203,'Chicken Wings':175,'Chicken Thighs':175,'Chicken Breast':165,'Turkey Breast':165,'Pork Tenderloin':145,'Sausage - Beef/Pork':160,'Sausage - Poultry':165} %}
+        {{ t.get(p, 0) }}
+  - condition: template
+    value_template: "{{ target_temp | float(0) > 0 }}"
+  - action: input_number.set_value
+    target:
+      entity_id: "{{ target_entity }}"
+    data:
+      value: "{{ target_temp | float }}"
+mode: queued
+max: 4

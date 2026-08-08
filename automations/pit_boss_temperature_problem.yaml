@@ -1,0 +1,36 @@
+id: pit_boss_temperature_problem
+alias: Pit Boss - Temperature Problem
+triggers:
+  - trigger: template
+    value_template: >
+      {% set current = state_attr('climate.pit_boss_grill_temperature','current_temperature') | float(0) %}
+      {% set target = state_attr('climate.pit_boss_grill_temperature','temperature') | float(0) %}
+      {{ is_state('input_boolean.pit_boss_reached_temperature','on') and is_state('climate.pit_boss_grill_temperature','heat') and current <= target - 25 }}
+    for: "00:10:00"
+    id: low
+  - trigger: template
+    value_template: >
+      {% set current = state_attr('climate.pit_boss_grill_temperature','current_temperature') | float(0) %}
+      {% set target = state_attr('climate.pit_boss_grill_temperature','temperature') | float(0) %}
+      {{ is_state('input_boolean.pit_boss_reached_temperature','on') and is_state('climate.pit_boss_grill_temperature','heat') and current >= target + 25 }}
+    for: "00:10:00"
+    id: high
+conditions:
+  - condition: state
+    entity_id: binary_sensor.pit_boss_connectivity
+    state: "on"
+actions:
+  - variables:
+      current_temp: "{{ state_attr('climate.pit_boss_grill_temperature','current_temperature') | round(0) | int }}"
+      target_temp: "{{ state_attr('climate.pit_boss_grill_temperature','temperature') | round(0) | int }}"
+  - action: script.stop_all_homepods
+    data: {}
+  - delay: "00:00:01"
+  - action: tts.google_translate_say
+    data:
+      cache: false
+      entity_id: media_player.all_homepods
+      message: >
+        {% if trigger.id == 'low' %}Warning. The Pit Boss smoker temperature has fallen to {{ current_temp }} degrees. The target is {{ target_temp }} degrees.{% else %}Warning. The Pit Boss smoker temperature has risen to {{ current_temp }} degrees. The target is {{ target_temp }} degrees.{% endif %}
+mode: queued
+max: 2

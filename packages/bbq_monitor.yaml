@@ -1,0 +1,494 @@
+# Home Assistant BBQ Monitor package
+#
+# Expected Inkbird entity IDs:
+# sensor.ibbq_raw_probe_data
+# sensor.ibbq_probe_status_raw
+# sensor.ibbq_battery
+# switch.ibbq_mute
+# select.ibbq_temperature_unit
+#
+# Expected Pit Boss IDs:
+# climate.pit_boss_grill_temperature
+# binary_sensor.pit_boss_connectivity
+# binary_sensor.pit_boss_mpc_error
+# binary_sensor.pit_boss_p2_error
+# binary_sensor.pit_boss_p3_error
+# binary_sensor.pit_boss_startup_error
+# binary_sensor.pit_boss_high_temperature_error
+# binary_sensor.pit_boss_fan_error
+# binary_sensor.pit_boss_igniter_error
+# binary_sensor.pit_boss_auger_error
+# binary_sensor.pit_boss_no_pellets
+#
+# TTS defaults used below:
+# media_player.all_homepods
+# script.stop_all_homepods
+# tts.google_translate_say
+
+input_number:
+  ibbq_target_probe_1:
+    name: IBBQ Probe 1 Finish Target
+    min: 70
+    max: 300
+    step: 1
+    initial: 140
+    unit_of_measurement: "°F"
+    icon: mdi:thermometer
+  ibbq_target_probe_2:
+    name: IBBQ Probe 2 Finish Target
+    min: 70
+    max: 300
+    step: 1
+    initial: 140
+    unit_of_measurement: "°F"
+    icon: mdi:thermometer
+  ibbq_target_probe_3:
+    name: IBBQ Probe 3 Finish Target
+    min: 70
+    max: 300
+    step: 1
+    initial: 140
+    unit_of_measurement: "°F"
+    icon: mdi:thermometer
+  ibbq_target_probe_4:
+    name: IBBQ Probe 4 Finish Target
+    min: 70
+    max: 300
+    step: 1
+    initial: 140
+    unit_of_measurement: "°F"
+    icon: mdi:thermometer
+
+input_select:
+  ibbq_probe_1_profile:
+    name: IBBQ Probe 1 Smoking Profile
+    options: &ibbq_profiles
+      - Manual
+      - Brisket
+      - Pork Shoulder / Butt
+      - Beef Chuck Roast
+      - Chicken Wings
+      - Chicken Thighs
+      - Chicken Breast
+      - Turkey Breast
+      - Pork Tenderloin
+      - Sausage - Beef/Pork
+      - Sausage - Poultry
+    initial: Manual
+    icon: mdi:food-steak
+  ibbq_probe_2_profile:
+    name: IBBQ Probe 2 Smoking Profile
+    options: *ibbq_profiles
+    initial: Manual
+    icon: mdi:food-steak
+  ibbq_probe_3_profile:
+    name: IBBQ Probe 3 Smoking Profile
+    options: *ibbq_profiles
+    initial: Manual
+    icon: mdi:food-steak
+  ibbq_probe_4_profile:
+    name: IBBQ Probe 4 Smoking Profile
+    options: *ibbq_profiles
+    initial: Manual
+    icon: mdi:food-steak
+
+input_boolean:
+  ibbq_probe_1_milestone_announced:
+    name: IBBQ Probe 1 Milestone Announced
+  ibbq_probe_2_milestone_announced:
+    name: IBBQ Probe 2 Milestone Announced
+  ibbq_probe_3_milestone_announced:
+    name: IBBQ Probe 3 Milestone Announced
+  ibbq_probe_4_milestone_announced:
+    name: IBBQ Probe 4 Milestone Announced
+  pit_boss_ready_armed:
+    name: Pit Boss Ready Armed
+  pit_boss_reached_temperature:
+    name: Pit Boss Reached Temperature
+
+template:
+  - sensor:
+      - name: IBBQ Probe 1
+        unique_id: ibbq_probe_1
+        device_class: temperature
+        state_class: measurement
+        unit_of_measurement: "°F"
+        state: >
+          {% set raw = states('sensor.ibbq_raw_probe_data') | base64_decode(none) | unpack('h', 0) %}
+          {% if raw / 100.0 != -0.1 %}{{ raw / 100.0 }}{% else %}{{ none }}{% endif %}
+      - name: IBBQ Probe 2
+        unique_id: ibbq_probe_2
+        device_class: temperature
+        state_class: measurement
+        unit_of_measurement: "°F"
+        state: >
+          {% set raw = states('sensor.ibbq_raw_probe_data') | base64_decode(none) | unpack('h', 4) %}
+          {% if raw / 100.0 != -0.1 %}{{ raw / 100.0 }}{% else %}{{ none }}{% endif %}
+      - name: IBBQ Probe 3
+        unique_id: ibbq_probe_3
+        device_class: temperature
+        state_class: measurement
+        unit_of_measurement: "°F"
+        state: >
+          {% set raw = states('sensor.ibbq_raw_probe_data') | base64_decode(none) | unpack('h', 8) %}
+          {% if raw / 100.0 != -0.1 %}{{ raw / 100.0 }}{% else %}{{ none }}{% endif %}
+      - name: IBBQ Probe 4
+        unique_id: ibbq_probe_4
+        device_class: temperature
+        state_class: measurement
+        unit_of_measurement: "°F"
+        state: >
+          {% set raw = states('sensor.ibbq_raw_probe_data') | base64_decode(none) | unpack('h', 12) %}
+          {% if raw / 100.0 != -0.1 %}{{ raw / 100.0 }}{% else %}{{ none }}{% endif %}
+
+  - binary_sensor:
+      - name: IBBQ Probe 1 Connected
+        unique_id: ibbq_probe_1_connected
+        device_class: connectivity
+        availability: >
+          {{ states('sensor.ibbq_probe_status_raw') not in ['unknown', 'unavailable', 'none'] }}
+        state: >
+          {% set value = states('sensor.ibbq_probe_status_raw') | int %}{{ value % 2 == 0 }}
+      - name: IBBQ Probe 2 Connected
+        unique_id: ibbq_probe_2_connected
+        device_class: connectivity
+        availability: >
+          {{ states('sensor.ibbq_probe_status_raw') not in ['unknown', 'unavailable', 'none'] }}
+        state: >
+          {% set value = states('sensor.ibbq_probe_status_raw') | int %}{{ (value // 2) % 2 == 0 }}
+      - name: IBBQ Probe 3 Connected
+        unique_id: ibbq_probe_3_connected
+        device_class: connectivity
+        availability: >
+          {{ states('sensor.ibbq_probe_status_raw') not in ['unknown', 'unavailable', 'none'] }}
+        state: >
+          {% set value = states('sensor.ibbq_probe_status_raw') | int %}{{ (value // 4) % 2 == 0 }}
+      - name: IBBQ Probe 4 Connected
+        unique_id: ibbq_probe_4_connected
+        device_class: connectivity
+        availability: >
+          {{ states('sensor.ibbq_probe_status_raw') not in ['unknown', 'unavailable', 'none'] }}
+        state: >
+          {% set value = states('sensor.ibbq_probe_status_raw') | int %}{{ (value // 8) % 2 == 0 }}
+
+automation:
+  - id: ibbq_apply_probe_smoking_profile
+    alias: IBBQ - Apply Probe Smoking Profile
+    triggers:
+      - trigger: state
+        entity_id: input_select.ibbq_probe_1_profile
+        id: probe_1
+      - trigger: state
+        entity_id: input_select.ibbq_probe_2_profile
+        id: probe_2
+      - trigger: state
+        entity_id: input_select.ibbq_probe_3_profile
+        id: probe_3
+      - trigger: state
+        entity_id: input_select.ibbq_probe_4_profile
+        id: probe_4
+    conditions:
+      - condition: template
+        value_template: "{{ trigger.to_state.state != 'Manual' }}"
+    actions:
+      - variables:
+          target_entity: >
+            {{ {'probe_1':'input_number.ibbq_target_probe_1','probe_2':'input_number.ibbq_target_probe_2','probe_3':'input_number.ibbq_target_probe_3','probe_4':'input_number.ibbq_target_probe_4'}[trigger.id] }}
+          target_temp: >
+            {% set p = trigger.to_state.state %}
+            {% set t = {'Brisket':203,'Pork Shoulder / Butt':203,'Beef Chuck Roast':203,'Chicken Wings':175,'Chicken Thighs':175,'Chicken Breast':165,'Turkey Breast':165,'Pork Tenderloin':145,'Sausage - Beef/Pork':160,'Sausage - Poultry':165} %}
+            {{ t.get(p, 0) }}
+      - condition: template
+        value_template: "{{ target_temp | float(0) > 0 }}"
+      - action: input_number.set_value
+        target:
+          entity_id: "{{ target_entity }}"
+        data:
+          value: "{{ target_temp | float }}"
+    mode: queued
+    max: 4
+
+  - id: ibbq_probe_target_temperature_alerts
+    alias: IBBQ - Probe Target Temperature Alerts
+    triggers:
+      - trigger: state
+        entity_id: sensor.ibbq_probe_1
+        id: probe_1
+      - trigger: state
+        entity_id: sensor.ibbq_probe_2
+        id: probe_2
+      - trigger: state
+        entity_id: sensor.ibbq_probe_3
+        id: probe_3
+      - trigger: state
+        entity_id: sensor.ibbq_probe_4
+        id: probe_4
+    conditions: []
+    actions:
+      - variables:
+          probe_number: "{{ {'probe_1':1,'probe_2':2,'probe_3':3,'probe_4':4}[trigger.id] }}"
+          target_entity: >
+            {{ {'probe_1':'input_number.ibbq_target_probe_1','probe_2':'input_number.ibbq_target_probe_2','probe_3':'input_number.ibbq_target_probe_3','probe_4':'input_number.ibbq_target_probe_4'}[trigger.id] }}
+          connected_entity: >
+            {{ {'probe_1':'binary_sensor.ibbq_probe_1_connected','probe_2':'binary_sensor.ibbq_probe_2_connected','probe_3':'binary_sensor.ibbq_probe_3_connected','probe_4':'binary_sensor.ibbq_probe_4_connected'}[trigger.id] }}
+          current_temp: "{{ trigger.to_state.state | float(0) }}"
+          previous_temp: >
+            {% if trigger.from_state is not none and trigger.from_state.state not in ['unknown','unavailable'] %}{{ trigger.from_state.state | float }}{% else %}-999{% endif %}
+          target_temp: "{{ states(target_entity) | float }}"
+      - condition: template
+        value_template: >
+          {{ is_state(connected_entity,'on') and trigger.to_state.state not in ['unknown','unavailable'] and current_temp >= target_temp and previous_temp < target_temp }}
+      - action: script.stop_all_homepods
+        data: {}
+      - delay: "00:00:01"
+      - action: tts.google_translate_say
+        data:
+          cache: false
+          entity_id: media_player.all_homepods
+          message: "I B B Q probe {{ probe_number }} has reached its target temperature of {{ target_temp | round(0) | int }} degrees."
+    mode: queued
+    max: 4
+
+  - id: ibbq_smoking_milestone_alerts
+    alias: IBBQ - Smoking Milestone Alerts
+    triggers:
+      - trigger: state
+        entity_id: sensor.ibbq_probe_1
+        id: probe_1
+      - trigger: state
+        entity_id: sensor.ibbq_probe_2
+        id: probe_2
+      - trigger: state
+        entity_id: sensor.ibbq_probe_3
+        id: probe_3
+      - trigger: state
+        entity_id: sensor.ibbq_probe_4
+        id: probe_4
+    conditions: []
+    actions:
+      - variables:
+          probe_number: "{{ {'probe_1':1,'probe_2':2,'probe_3':3,'probe_4':4}[trigger.id] }}"
+          profile_entity: >
+            {{ {'probe_1':'input_select.ibbq_probe_1_profile','probe_2':'input_select.ibbq_probe_2_profile','probe_3':'input_select.ibbq_probe_3_profile','probe_4':'input_select.ibbq_probe_4_profile'}[trigger.id] }}
+          connected_entity: >
+            {{ {'probe_1':'binary_sensor.ibbq_probe_1_connected','probe_2':'binary_sensor.ibbq_probe_2_connected','probe_3':'binary_sensor.ibbq_probe_3_connected','probe_4':'binary_sensor.ibbq_probe_4_connected'}[trigger.id] }}
+          milestone_entity: >
+            {{ {'probe_1':'input_boolean.ibbq_probe_1_milestone_announced','probe_2':'input_boolean.ibbq_probe_2_milestone_announced','probe_3':'input_boolean.ibbq_probe_3_milestone_announced','probe_4':'input_boolean.ibbq_probe_4_milestone_announced'}[trigger.id] }}
+          profile: "{{ states(profile_entity) }}"
+          current_temp: "{{ trigger.to_state.state | float(0) }}"
+          previous_temp: >
+            {% if trigger.from_state is not none and trigger.from_state.state not in ['unknown','unavailable'] %}{{ trigger.from_state.state | float }}{% else %}-999{% endif %}
+      - condition: template
+        value_template: >
+          {{ profile in ['Brisket','Pork Shoulder / Butt'] and is_state(connected_entity,'on') and is_state(milestone_entity,'off') and previous_temp < 165 and current_temp >= 165 }}
+      - action: input_boolean.turn_on
+        target:
+          entity_id: "{{ milestone_entity }}"
+      - action: script.stop_all_homepods
+        data: {}
+      - delay: "00:00:01"
+      - action: tts.google_translate_say
+        data:
+          cache: false
+          entity_id: media_player.all_homepods
+          message: >
+            I B B Q probe {{ probe_number }} has reached 165 degrees.
+            {% if profile == 'Brisket' %}Check the brisket bark and consider wrapping.{% else %}Check the pork shoulder bark and consider wrapping.{% endif %}
+    mode: queued
+    max: 4
+
+  - id: ibbq_reset_smoking_milestones
+    alias: IBBQ - Reset Smoking Milestones
+    triggers:
+      - trigger: state
+        entity_id: input_select.ibbq_probe_1_profile
+        id: profile_1
+      - trigger: state
+        entity_id: input_select.ibbq_probe_2_profile
+        id: profile_2
+      - trigger: state
+        entity_id: input_select.ibbq_probe_3_profile
+        id: profile_3
+      - trigger: state
+        entity_id: input_select.ibbq_probe_4_profile
+        id: profile_4
+      - trigger: numeric_state
+        entity_id: sensor.ibbq_probe_1
+        below: 140
+        id: cool_1
+      - trigger: numeric_state
+        entity_id: sensor.ibbq_probe_2
+        below: 140
+        id: cool_2
+      - trigger: numeric_state
+        entity_id: sensor.ibbq_probe_3
+        below: 140
+        id: cool_3
+      - trigger: numeric_state
+        entity_id: sensor.ibbq_probe_4
+        below: 140
+        id: cool_4
+    conditions: []
+    actions:
+      - variables:
+          milestone_entity: >
+            {% if trigger.id in ['profile_1','cool_1'] %}input_boolean.ibbq_probe_1_milestone_announced{% elif trigger.id in ['profile_2','cool_2'] %}input_boolean.ibbq_probe_2_milestone_announced{% elif trigger.id in ['profile_3','cool_3'] %}input_boolean.ibbq_probe_3_milestone_announced{% else %}input_boolean.ibbq_probe_4_milestone_announced{% endif %}
+      - action: input_boolean.turn_off
+        target:
+          entity_id: "{{ milestone_entity }}"
+    mode: queued
+    max: 4
+
+  - id: pit_boss_error_alerts
+    alias: Pit Boss - Error Alerts
+    triggers:
+      - trigger: state
+        entity_id:
+          - binary_sensor.pit_boss_mpc_error
+          - binary_sensor.pit_boss_p2_error
+          - binary_sensor.pit_boss_p3_error
+          - binary_sensor.pit_boss_startup_error
+          - binary_sensor.pit_boss_high_temperature_error
+          - binary_sensor.pit_boss_fan_error
+          - binary_sensor.pit_boss_igniter_error
+          - binary_sensor.pit_boss_auger_error
+          - binary_sensor.pit_boss_no_pellets
+        to: "on"
+        id: error
+      - trigger: state
+        entity_id: binary_sensor.pit_boss_connectivity
+        to: "off"
+        for: "00:02:00"
+        id: disconnected
+    conditions: []
+    actions:
+      - variables:
+          message: >
+            {% if trigger.id == 'disconnected' %}The Pit Boss smoker has lost its connection to Home Assistant.
+            {% elif trigger.entity_id == 'binary_sensor.pit_boss_no_pellets' %}The Pit Boss smoker is out of pellets.
+            {% elif trigger.entity_id == 'binary_sensor.pit_boss_fan_error' %}The Pit Boss smoker is reporting a fan error.
+            {% elif trigger.entity_id == 'binary_sensor.pit_boss_igniter_error' %}The Pit Boss smoker is reporting an igniter error.
+            {% elif trigger.entity_id == 'binary_sensor.pit_boss_auger_error' %}The Pit Boss smoker is reporting an auger error.
+            {% elif trigger.entity_id == 'binary_sensor.pit_boss_high_temperature_error' %}Warning. The Pit Boss smoker is reporting a high temperature error.
+            {% elif trigger.entity_id == 'binary_sensor.pit_boss_startup_error' %}The Pit Boss smoker is reporting a startup error.
+            {% elif trigger.entity_id == 'binary_sensor.pit_boss_mpc_error' %}The Pit Boss smoker is reporting an error with meat probe one.
+            {% elif trigger.entity_id == 'binary_sensor.pit_boss_p2_error' %}The Pit Boss smoker is reporting an error with meat probe two.
+            {% elif trigger.entity_id == 'binary_sensor.pit_boss_p3_error' %}The Pit Boss smoker is reporting an error with meat probe three.
+            {% else %}The Pit Boss smoker is reporting an error.{% endif %}
+      - action: script.stop_all_homepods
+        data: {}
+      - delay: "00:00:01"
+      - action: tts.google_translate_say
+        data:
+          cache: false
+          entity_id: media_player.all_homepods
+          message: "{{ message }}"
+    mode: queued
+    max: 10
+
+  - id: pit_boss_ready_cycle
+    alias: Pit Boss - Smoker Ready
+    description: Arms during warm-up and announces once when target is reached.
+    triggers:
+      - trigger: template
+        value_template: >
+          {% set current = state_attr('climate.pit_boss_grill_temperature','current_temperature') | float(0) %}
+          {% set target = state_attr('climate.pit_boss_grill_temperature','temperature') | float(0) %}
+          {{ is_state('climate.pit_boss_grill_temperature','heat') and target > 0 and current <= target - 15 and is_state('input_boolean.pit_boss_reached_temperature','off') }}
+        for: "00:01:00"
+        id: arm
+      - trigger: template
+        value_template: >
+          {% set current = state_attr('climate.pit_boss_grill_temperature','current_temperature') | float(0) %}
+          {% set target = state_attr('climate.pit_boss_grill_temperature','temperature') | float(0) %}
+          {{ is_state('input_boolean.pit_boss_ready_armed','on') and is_state('input_boolean.pit_boss_reached_temperature','off') and is_state('climate.pit_boss_grill_temperature','heat') and target > 0 and (current - target) | abs <= 10 }}
+        for: "00:02:00"
+        id: ready
+      - trigger: state
+        entity_id: climate.pit_boss_grill_temperature
+        to: "off"
+        id: reset
+      - trigger: state
+        entity_id: climate.pit_boss_grill_temperature
+        attribute: temperature
+        id: target_changed
+    conditions: []
+    actions:
+      - choose:
+          - conditions:
+              - condition: trigger
+                id: arm
+            sequence:
+              - action: input_boolean.turn_on
+                target:
+                  entity_id: input_boolean.pit_boss_ready_armed
+          - conditions:
+              - condition: trigger
+                id: ready
+            sequence:
+              - action: input_boolean.turn_on
+                target:
+                  entity_id: input_boolean.pit_boss_reached_temperature
+              - action: input_boolean.turn_off
+                target:
+                  entity_id: input_boolean.pit_boss_ready_armed
+              - variables:
+                  current_temp: "{{ state_attr('climate.pit_boss_grill_temperature','current_temperature') | round(0) | int }}"
+                  target_temp: "{{ state_attr('climate.pit_boss_grill_temperature','temperature') | round(0) | int }}"
+              - action: script.stop_all_homepods
+                data: {}
+              - delay: "00:00:01"
+              - action: tts.google_translate_say
+                data:
+                  cache: false
+                  entity_id: media_player.all_homepods
+                  message: "The Pit Boss smoker is up to temperature. It is currently {{ current_temp }} degrees, with a target of {{ target_temp }} degrees."
+          - conditions:
+              - condition: trigger
+                id:
+                  - reset
+                  - target_changed
+            sequence:
+              - action: input_boolean.turn_off
+                target:
+                  entity_id:
+                    - input_boolean.pit_boss_ready_armed
+                    - input_boolean.pit_boss_reached_temperature
+    mode: restart
+
+  - id: pit_boss_temperature_problem
+    alias: Pit Boss - Temperature Problem
+    triggers:
+      - trigger: template
+        value_template: >
+          {% set current = state_attr('climate.pit_boss_grill_temperature','current_temperature') | float(0) %}
+          {% set target = state_attr('climate.pit_boss_grill_temperature','temperature') | float(0) %}
+          {{ is_state('input_boolean.pit_boss_reached_temperature','on') and is_state('climate.pit_boss_grill_temperature','heat') and current <= target - 25 }}
+        for: "00:10:00"
+        id: low
+      - trigger: template
+        value_template: >
+          {% set current = state_attr('climate.pit_boss_grill_temperature','current_temperature') | float(0) %}
+          {% set target = state_attr('climate.pit_boss_grill_temperature','temperature') | float(0) %}
+          {{ is_state('input_boolean.pit_boss_reached_temperature','on') and is_state('climate.pit_boss_grill_temperature','heat') and current >= target + 25 }}
+        for: "00:10:00"
+        id: high
+    conditions:
+      - condition: state
+        entity_id: binary_sensor.pit_boss_connectivity
+        state: "on"
+    actions:
+      - variables:
+          current_temp: "{{ state_attr('climate.pit_boss_grill_temperature','current_temperature') | round(0) | int }}"
+          target_temp: "{{ state_attr('climate.pit_boss_grill_temperature','temperature') | round(0) | int }}"
+      - action: script.stop_all_homepods
+        data: {}
+      - delay: "00:00:01"
+      - action: tts.google_translate_say
+        data:
+          cache: false
+          entity_id: media_player.all_homepods
+          message: >
+            {% if trigger.id == 'low' %}Warning. The Pit Boss smoker temperature has fallen to {{ current_temp }} degrees. The target is {{ target_temp }} degrees.{% else %}Warning. The Pit Boss smoker temperature has risen to {{ current_temp }} degrees. The target is {{ target_temp }} degrees.{% endif %}
+    mode: queued
+    max: 2

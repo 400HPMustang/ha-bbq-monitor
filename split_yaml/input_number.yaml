@@ -1,0 +1,32 @@
+ibbq_target_probe_1:
+  name: IBBQ Probe 1 Finish Target
+  min: 70
+  max: 300
+  step: 1
+  initial: 140
+  unit_of_measurement: "°F"
+  icon: mdi:thermometer
+ibbq_target_probe_2:
+  name: IBBQ Probe 2 Finish Target
+  min: 70
+  max: 300
+  step: 1
+  initial: 140
+  unit_of_measurement: "°F"
+  icon: mdi:thermometer
+ibbq_target_probe_3:
+  name: IBBQ Probe 3 Finish Target
+  min: 70
+  max: 300
+  step: 1
+  initial: 140
+  unit_of_measurement: "°F"
+  icon: mdi:thermometer
+ibbq_target_probe_4:
+  name: IBBQ Probe 4 Finish Target
+  min: 70
+  max: 300
+  step: 1
+  initial: 140
+  unit_of_measurement: "°F"
+  icon: mdi:thermometer

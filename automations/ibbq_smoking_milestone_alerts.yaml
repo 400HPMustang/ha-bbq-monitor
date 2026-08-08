@@ -1,0 +1,47 @@
+id: ibbq_smoking_milestone_alerts
+alias: IBBQ - Smoking Milestone Alerts
+triggers:
+  - trigger: state
+    entity_id: sensor.ibbq_probe_1
+    id: probe_1
+  - trigger: state
+    entity_id: sensor.ibbq_probe_2
+    id: probe_2
+  - trigger: state
+    entity_id: sensor.ibbq_probe_3
+    id: probe_3
+  - trigger: state
+    entity_id: sensor.ibbq_probe_4
+    id: probe_4
+conditions: []
+actions:
+  - variables:
+      probe_number: "{{ {'probe_1':1,'probe_2':2,'probe_3':3,'probe_4':4}[trigger.id] }}"
+      profile_entity: >
+        {{ {'probe_1':'input_select.ibbq_probe_1_profile','probe_2':'input_select.ibbq_probe_2_profile','probe_3':'input_select.ibbq_probe_3_profile','probe_4':'input_select.ibbq_probe_4_profile'}[trigger.id] }}
+      connected_entity: >
+        {{ {'probe_1':'binary_sensor.ibbq_probe_1_connected','probe_2':'binary_sensor.ibbq_probe_2_connected','probe_3':'binary_sensor.ibbq_probe_3_connected','probe_4':'binary_sensor.ibbq_probe_4_connected'}[trigger.id] }}
+      milestone_entity: >
+        {{ {'probe_1':'input_boolean.ibbq_probe_1_milestone_announced','probe_2':'input_boolean.ibbq_probe_2_milestone_announced','probe_3':'input_boolean.ibbq_probe_3_milestone_announced','probe_4':'input_boolean.ibbq_probe_4_milestone_announced'}[trigger.id] }}
+      profile: "{{ states(profile_entity) }}"
+      current_temp: "{{ trigger.to_state.state | float(0) }}"
+      previous_temp: >
+        {% if trigger.from_state is not none and trigger.from_state.state not in ['unknown','unavailable'] %}{{ trigger.from_state.state | float }}{% else %}-999{% endif %}
+  - condition: template
+    value_template: >
+      {{ profile in ['Brisket','Pork Shoulder / Butt'] and is_state(connected_entity,'on') and is_state(milestone_entity,'off') and previous_temp < 165 and current_temp >= 165 }}
+  - action: input_boolean.turn_on
+    target:
+      entity_id: "{{ milestone_entity }}"
+  - action: script.stop_all_homepods
+    data: {}
+  - delay: "00:00:01"
+  - action: tts.google_translate_say
+    data:
+      cache: false
+      entity_id: media_player.all_homepods
+      message: >
+        I B B Q probe {{ probe_number }} has reached 165 degrees.
+        {% if profile == 'Brisket' %}Check the brisket bark and consider wrapping.{% else %}Check the pork shoulder bark and consider wrapping.{% endif %}
+mode: queued
+max: 4

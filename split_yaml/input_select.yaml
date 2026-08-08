@@ -1,0 +1,31 @@
+ibbq_probe_1_profile:
+  name: IBBQ Probe 1 Smoking Profile
+  options: &ibbq_profiles
+    - Manual
+    - Brisket
+    - Pork Shoulder / Butt
+    - Beef Chuck Roast
+    - Chicken Wings
+    - Chicken Thighs
+    - Chicken Breast
+    - Turkey Breast
+    - Pork Tenderloin
+    - Sausage - Beef/Pork
+    - Sausage - Poultry
+  initial: Manual
+  icon: mdi:food-steak
+ibbq_probe_2_profile:
+  name: IBBQ Probe 2 Smoking Profile
+  options: *ibbq_profiles
+  initial: Manual
+  icon: mdi:food-steak
+ibbq_probe_3_profile:
+  name: IBBQ Probe 3 Smoking Profile
+  options: *ibbq_profiles
+  initial: Manual
+  icon: mdi:food-steak
+ibbq_probe_4_profile:
+  name: IBBQ Probe 4 Smoking Profile
+  options: *ibbq_profiles
+  initial: Manual
+  icon: mdi:food-steak

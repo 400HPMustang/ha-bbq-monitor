@@ -1,0 +1,12 @@
+ibbq_probe_1_milestone_announced:
+  name: IBBQ Probe 1 Milestone Announced
+ibbq_probe_2_milestone_announced:
+  name: IBBQ Probe 2 Milestone Announced
+ibbq_probe_3_milestone_announced:
+  name: IBBQ Probe 3 Milestone Announced
+ibbq_probe_4_milestone_announced:
+  name: IBBQ Probe 4 Milestone Announced
+pit_boss_ready_armed:
+  name: Pit Boss Ready Armed
+pit_boss_reached_temperature:
+  name: Pit Boss Reached Temperature

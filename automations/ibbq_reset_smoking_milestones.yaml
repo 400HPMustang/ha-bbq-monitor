@@ -1,0 +1,41 @@
+id: ibbq_reset_smoking_milestones
+alias: IBBQ - Reset Smoking Milestones
+triggers:
+  - trigger: state
+    entity_id: input_select.ibbq_probe_1_profile
+    id: profile_1
+  - trigger: state
+    entity_id: input_select.ibbq_probe_2_profile
+    id: profile_2
+  - trigger: state
+    entity_id: input_select.ibbq_probe_3_profile
+    id: profile_3
+  - trigger: state
+    entity_id: input_select.ibbq_probe_4_profile
+    id: profile_4
+  - trigger: numeric_state
+    entity_id: sensor.ibbq_probe_1
+    below: 140
+    id: cool_1
+  - trigger: numeric_state
+    entity_id: sensor.ibbq_probe_2
+    below: 140
+    id: cool_2
+  - trigger: numeric_state
+    entity_id: sensor.ibbq_probe_3
+    below: 140
+    id: cool_3
+  - trigger: numeric_state
+    entity_id: sensor.ibbq_probe_4
+    below: 140
+    id: cool_4
+conditions: []
+actions:
+  - variables:
+      milestone_entity: >
+        {% if trigger.id in ['profile_1','cool_1'] %}input_boolean.ibbq_probe_1_milestone_announced{% elif trigger.id in ['profile_2','cool_2'] %}input_boolean.ibbq_probe_2_milestone_announced{% elif trigger.id in ['profile_3','cool_3'] %}input_boolean.ibbq_probe_3_milestone_announced{% else %}input_boolean.ibbq_probe_4_milestone_announced{% endif %}
+  - action: input_boolean.turn_off
+    target:
+      entity_id: "{{ milestone_entity }}"
+mode: queued
+max: 4
