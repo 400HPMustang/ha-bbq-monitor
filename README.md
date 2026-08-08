@@ -18,6 +18,23 @@ This repository includes the complete Home Assistant side: LocalTuya DP notes, p
 - Sustained high/low chamber-temperature warnings
 - Responsive desktop/tablet/mobile dashboard
 
+## Dashboard
+
+The included dashboard uses Home Assistant's responsive Sections layout, so it works well on both desktop/tablet and mobile displays.
+
+### Desktop
+
+![BBQ dashboard on desktop](images/dashboard-desktop-1.png)
+
+![BBQ dashboard on desktop](images/dashboard-desktop-2.png)
+
+### Mobile
+
+<p align="center">
+  <img src="images/dashboard-mobile-2.png" width="390" alt="BBQ dashboard mobile overview">
+  <img src="images/dashboard-mobile-3.png" width="390" alt="IBBQ smoking profiles and probe temperatures on mobile">
+</p>
+
 ## Repository layout
 
 ```text
