@@ -24,9 +24,9 @@ The included dashboard uses Home Assistant's responsive Sections layout, so it w
 
 ### Desktop
 
-![BBQ dashboard on desktop](images/dashboard-desktop-1.png)
-
 ![BBQ dashboard on desktop](images/dashboard-desktop-2.png)
+
+![BBQ dashboard on desktop](images/dashboard-desktop-1.png)
 
 ### Mobile
 
